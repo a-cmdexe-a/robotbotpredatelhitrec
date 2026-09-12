@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Бот-помощник для администрации — что умеет</title>
+<meta name="description" content="Бот-помощник для администрации сервера: наказания, предупреждения, чистка, автомодерация, логи и апелляции.">
+<style>
+  :root{
+    --bg:#0a0b0f;
+    --bg-soft:#101218;
+    --card:#14171f;
+    --card-hover:#181c26;
+    --line:rgba(255,255,255,.08);
+    --text:#e8eaf0;
+    --muted:#9aa1b2;
+    --accent:#ff4d4d;
+    --accent-2:#ff9f43;
+    --radius:16px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    backdrop-filter:blur(12px);
+    background:rgba(10,11,15,.75);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.02em}
+  .logo-mark{
+    width:28px;height:28px;border-radius:8px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    color:#fff;font-size:15px;
+  }
+  .nav-links{display:flex;gap:24px;font-size:14px;color:var(--muted)}
+  .nav-links a{transition:color .2s}
+  .nav-links a:hover{color:var(--text)}
+  @media(max-width:640px){.nav-links{display:none}}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    padding:110px 0 90px;
+    text-align:center;
+  }
+  .hero::before{
+    content:"";
+    position:absolute;inset:-20% -40% auto;height:600px;
+    background:
+      radial-gradient(600px 300px at 30% 20%,rgba(255,77,77,.16),transparent 70%),
+      radial-gradient(600px 300px at 75% 30%,rgba(255,159,67,.10),transparent 70%);
+    pointer-events:none;
+  }
+  .hero .tag{
+    display:inline-block;
+    font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent-2);
+    border:1px solid rgba(255,159,67,.35);
+    background:rgba(255,159,67,.08);
+    padding:6px 14px;border-radius:999px;margin-bottom:28px;
+  }
+  .hero h1{
+    font-size:clamp(38px,6vw,64px);
+    line-height:1.1;
+    font-weight:800;
+    letter-spacing:-.02em;
+  }
+  .hero h1 .grad{
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p{
+    max-width:640px;margin:24px auto 0;
+    color:var(--muted);font-size:18px;
+  }
+
+  /* ---------- sections ---------- */
+  section{padding:72px 0}
+  .kicker{
+    font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:12px;
+  }
+  h2{
+    font-size:clamp(28px,4vw,40px);
+    font-weight:800;letter-spacing:-.01em;line-height:1.15;
+    margin-bottom:16px;
+  }
+  .lead{color:var(--muted);font-size:17px;max-width:720px}
+
+  .about{
+    background:var(--bg-soft);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+  }
+
+  /* ---------- feature cards ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;margin-top:44px;
+  }
+  @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:600px){.grid{grid-template-columns:1fr}}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:26px;
+    transition:transform .25s ease,border-color .25s ease,background .25s ease;
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .card:hover{
+    transform:translateY(-4px);
+    border-color:rgba(255,77,77,.4);
+    background:var(--card-hover);
+  }
+  .card .icon{
+    width:44px;height:44px;border-radius:12px;
+    display:grid;place-items:center;font-size:20px;
+    background:linear-gradient(135deg,rgba(255,77,77,.16),rgba(255,159,67,.10));
+    border:1px solid rgba(255,77,77,.25);
+  }
+  .card h3{font-size:19px;font-weight:700}
+  .card p{color:var(--muted);font-size:15px}
+  .cmd{
+    margin-top:auto;
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:"JetBrains Mono","SF Mono",Consolas,monospace;
+    font-size:12.5px;color:var(--accent-2);
+    background:rgba(255,159,67,.07);
+    border:1px solid rgba(255,159,67,.22);
+    padding:5px 10px;border-radius:8px;width:fit-content;
+  }
+
+  /* ---------- principles ---------- */
+  .principles{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:44px;
+  }
+  @media(max-width:900px){.principles{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.principles{grid-template-columns:1fr}}
+  .principle{
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:24px;
+    background:var(--card);
+    transition:border-color .25s,transform .25s;
+  }
+  .principle:hover{border-color:rgba(255,159,67,.45);transform:translateY(-3px)}
+  .principle .num{
+    font-family:"JetBrains Mono",monospace;
+    font-size:13px;color:var(--accent);margin-bottom:12px;display:block;
+  }
+  .principle h3{font-size:17px;font-weight:700;margin-bottom:8px}
+  .principle p{color:var(--muted);font-size:14.5px}
+
+  /* ---------- footer ---------- */
+  footer{
+    border-top:1px solid var(--line);
+    padding:36px 0;text-align:center;color:var(--muted);font-size:14px;
+  }
+  footer .heart{color:var(--accent)}
+
+  /* ---------- reveal animation ---------- */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="#top">
+      <span class="logo-mark">⚡</span>
+      <span>Бот&nbsp;модерации</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#about">Что это</a>
+      <a href="#features">Умения</a>
+      <a href="#principles">Принципы</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="wrap">
+    <span class="tag">Модерация без хаоса</span>
+    <h1>Бот, за которым<br><span class="grad">следит порядок</span></h1>
+    <p>Бот-помощник для администрации сервера. Не «ещё один бот с командами», а рабочий инструмент, которым реально пользуются каждый день.</p>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="wrap">
+    <div class="kicker reveal">Что это за бот</div>
+    <h2 class="reveal">Рабочий инструмент, а не игрушка</h2>
+    <p class="lead reveal">Его задача — чтобы модерация была <b>быстрой</b>, <b>понятной</b> и <b>не терялась</b>. Всё, что происходит на сервере, упирается в аккуратный инструментарий: нажал команду — получил результат, и запись о нём осталась.</p>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="kicker reveal">Что он умеет</div>
+    <h2 class="reveal">Шесть штук, чтобы не тонуть</h2>
+
+    <div class="grid">
+      <div class="card reveal">
+        <div class="icon">🔨</div>
+        <h3>Наказания</h3>
+        <p>Бан, разбан, кик. Мут на время и снятие мута. Всё с обязательной причиной — не «просто забанил», а «забанил, потому что». Причина сохраняется и видна потом.</p>
+        <span class="cmd">/ban · /kick · /mute</span>
+      </div>
+
+      <div class="card reveal">
+        <div class="icon">⚠️</div>
+        <h3>Предупреждения</h3>
+        <p>Варн — это не бан, но и не пустой звук. Бот запоминает, кто сколько раз предупреждён. По накоплению — автоматический мут или бан. История не стирается.</p>
+        <span class="cmd">/warn · /warning list</span>
+      </div>
+
+      <div class="card reveal">
+        <div class="icon">🧹</div>
+        <h3>Чистка</h3>
+        <p>Удаление пачки сообщений в канале. Всех подряд или только конкретного человека. После спам-волны это спасает.</p>
+        <span class="cmd">/clear · /purge</span>
+      </div>
+
+      <div class="card reveal">
+        <div class="icon">🤖</div>
+        <h3>Автомодерация</h3>
+        <p>Бот сам следит за порядком, пока админов нет. Спам, капс, реклама, запрещённые слова — реагирует сразу, не дожидаясь жалоб.</p>
+        <span class="cmd">/auto on · /auto settings</span>
+      </div>
+
+      <div class="card reveal">
+        <div class="icon">📋</div>
+        <h3>Логи</h3>
+        <p>Отдельный канал, куда падает каждое действие. Кто, кого, за что, когда. Если админ перегнул — видно. Если бан оспаривают — есть чем ответить.</p>
+        <span class="cmd">/logs · #mod-logs</span>
+      </div>
+
+      <div class="card reveal">
+        <div class="icon">📨</div>
+        <h3>Апелляции</h3>
+        <p>Забаненный может написать боту и объяснить ситуацию. Это уходит админам, они решают — оставить бан или снять. Без сторонних сайтов и форм, всё внутри.</p>
+        <span class="cmd">/appeal</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="principles">
+  <div class="wrap">
+    <div class="kicker reveal">Каким он должен быть</div>
+    <h2 class="reveal">Четыре слова</h2>
+
+    <div class="principles">
+      <div class="principle reveal">
+        <span class="num">01</span>
+        <h3>Тихим</h3>
+        <p>Не лезет в чат без повода, не спамит ответами, не мешает общению.</p>
+      </div>
+      <div class="principle reveal">
+        <span class="num">02</span>
+        <h3>Понятным</h3>
+        <p>Админ не должен помнить синтаксис. Написал команду — бот сделал.</p>
+      </div>
+      <div class="principle reveal">
+        <span class="num">03</span>
+        <h3>Честным</h3>
+        <p>Ничего не удаляет бесследно. Всё, что сделано — записано.</p>
+      </div>
+      <div class="principle reveal">
+        <span class="num">04</span>
+        <h3>Быстрым</h3>
+        <p>Одно действие — одна команда. Без «а теперь подожди, а теперь подтверди».</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Бот-помощник для администрации · сделано с <span class="heart">♥</span> для модерации
+  </div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target);} });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+
+</body>
+</html>
